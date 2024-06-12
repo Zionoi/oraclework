@@ -41,9 +41,8 @@ select username, user_id from dba_users;
 
 create user c##user1 IDENTIFIED by 1234; -- c##user1 유저 생성완료
 
--- 유저 만들때마다 c##을 넣어야해서 불편하다
+----------------------- 유저 만들때마다 c##을 넣어야해서 불편하다
 -- c## 키워드를 회피하는 설정
-
 alter session set "_oracle_script" = true; -- 이렇게하면 유저명에 c## 안붙여도 됨
 
 -- 수업시간에 사용할 user 생성 
@@ -54,6 +53,7 @@ create user 계정명 identified by 비밀번호
 create user tjoeun identified by 1234;
 
 
+----------------유저생성후 권한을 줘야함-------------
 -- 권한생성 방법
 /*
  [표현법] GRANT 권한1, 권한2, .... TO 계정명;
@@ -64,7 +64,7 @@ grant resource, connect to tjoeun;   --데이터베이스에 접근하거나 로
 --DROP USER USER명  CASCAED;
 
 
--- insert 시 생성된 유저에게 테이블스페이스에 얼마만큼의 영역을 할당할 것인지 정해줘야함 (용량을 넣어줘야함)
+-------------------- insert 시 생성된 유저에게 테이블스페이스에 얼마만큼의 영역을 할당할 것인지 정해줘야함 (용량을 넣어줘야함)
 -- 보통은 이렇게 리미트 없이 설정하지만
 alter user tjoeun default tablespace users quota unlimited on users;
 
