@@ -14,7 +14,29 @@ select DEPARTMENT_NAME "학과 명", CATEGORY "계열"
 FROM tb_department
 WHERE CAPACITY >= 20 AND CAPACITY <=30;
 
+--==============================================================================
+--                            춘대학교 펑션 문제
+--==============================================================================
 
+--1. 영어영문학과(학과코드 002) 학생들의 이름, 입학 년도를 입학 년도가 빠른 순으로 표시하는 sql 문장을 작성하시오 (단, 헤더는 '학번', '이름', '입학년도' 가 표시되도록 한다.)
+select STUDENT_NAME 학번, ENTRANCE_DATE 이름
+from TB_STUDENT
+where DEPARTMENT_NO = '002'
+order by ENTRANCE_DATE DESC;
 
+--2 춘 기술대학교의 교수 중 이름이 세 글자가 아닌 교수가 한 명 있다고 한다.
+-- 그 교수의 이름과 주민번호를 화면에 출력하는 SQL문장을 작성해 보자 
+-- (* 이때 올바르게 작성한 SQL문장의 결과 값이 예상과 다르게 나올 수 있다. 원인이 무엇일지 생각해볼 것)
 
+SELECT PROFESSOR_NAME,PROFESSOR_SSN
+FROM TB_PROFESSOR
+WHERE LENGTH(PROFESSOR_NAME) != 3;
 
+--3 춘 기술대학교의 남자 교수들의 이름과 나이를 출력하는 SQL 문장을 작성하시오.
+-- 단 이때 나이가 적은 사람에서 많은 사람 순서로 화면에 출력되도록 만드시오.
+-- (단, 교수 중 2000년 이후 출생자는 없으며 출력헤더는 "교수이름", "나이"로 한다
+-- 나이는 '만'으로 계산한다.)
+SELECT PROFESSOR_NAME 교수이름,PROFESSOR_SSN, FLOOR(MONTHS_BETWEEN(SYSDATE, TO_DATE(SUBSTR(PROFESSOR_SSN,1,6)))/12) 나이
+FROM TB_PROFESSOR
+WHERE SUBSTR(PROFESSOR_SSN, 8, 1) IN ('1', '3')
+ORDER BY 나이 ASC;
