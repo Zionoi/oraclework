@@ -6,7 +6,7 @@
                 - 그룹 함수 : n개의 값을 읽어들여 1개의 결과값 반환(그룹별로 함수 실행)
                 
                 >> select절에 단일행 함수와 그룹함수를 함께 사용할 수 없다.
-                >> 함수식을 기술할 수 있는 위치 : SELECT절, WHERE절, ORDER BY절, 
+                >> 함수식을 기술할 수 있는 위치 : SELECT절, WHERE절, ORDER BY절, HAVING절
 
 
 */
@@ -422,7 +422,7 @@ SELECT TO_CHAR(SYSDATE,'YYYY-MM-DD DAY') FROM DUAL; --2024-06-12 수요일 출�
 SELECT TO_CHAR(SYSDATE,'MON,YYYY') FROM DUAL;
 
 -- YYYY년 MM월 DD일 요일 출력하고싶다면
-SELECT TO_CHAR(SYSDATE,'"오우"YYYY"년 "MM"월 "DD"일 " DAY') FROM DUAL;
+SELECT TO_CHAR(SYSDATE,'YYYY"년" MM"월" DD"일" DAY') FROM DUAL;
 SELECT TO_CHAR(SYSDATE,'DL') FROM DUAL;  --위에걸 이렇게 줄일수 있다.
 
 --입사일을 ????년 ?월 ?일 ?요일 로 출력
@@ -492,7 +492,371 @@ SELECT TO_CHAR(SYSDATE,'DAY'),      --수요일
         TO_CHAR(SYSDATE, 'DY')      --수
     FROM DUAL;
 
+----------------------------------------------------------------------------
+/*
+    *TO_DATE : 숫자나 문자를 날짜타입으로 변환
+    TO_DATE(숫자|날짜, [포맷]
+*/
+
+SELECT TO_DATE(20240613) FROM DUAL;
+SELECT TO_DATE(240613) FROM DUAL;
+
+--SELECT TO_DATE(010610) FROM DUAL; -- 숫자로 앞이 0일때 오류뜸
+SELECT TO_DATE('010610') FROM DUAL; -- 이렇게 문자로 형변환하면 잘 출력된다
+
+SELECT TO_DATE('070407 020814', 'YYMMDD HHMISS') FROM DUAL;  --이렇게하면 시간이 출력안된다
+SELECT TO_CHAR(TO_DATE('070407 020814', 'YYMMDD HHMISS'),'YY-MM-DD HH:MI:SS') FROM DUAL; -- 이렇게 CHAR 형변환후 원하는 포멧을 지정해주면 제대로 출력된다.
+
+SELECT TO_CHAR('070407 020814', 'YY-MM-DD HH:MI:SS') FROM DUAL; --이렇게하면 앞 인자에 숫자는 날짜로 인식할수 없어서 오류가뜸. 위에 TO_DATE로 날짜라고 인식시켜줘야 제대로 출력이됨
+SELECT TO_CHAR(170407, 'YYMMDD') FROM DUAL; --이것도 마찬가지로 그냥 숫자만 넣으면 날짜로 인식을 못해서 오류뜸. TO_DATE로 날짜타입변환 해줘야함.
+
+--SELECT TO_DATE('041030 143000','YYMMDD HHMISS') FROM DUAL; -- 오전 오후 유의해야함 그냥 HHMISS 했을땐 시간값을 12가 넘어가지 않게 입력해야 오류가 안뜬다
+SELECT TO_DATE('041030 143000','YYMMDD HH24MISS') FROM DUAL;    -- 또는 HH24MISS로 24시간으로 설정해주면 제대로 출력할 수 있다.
+
+SELECT TO_DATE('981213', 'YYMMDD') FROM DUAL;   --  YY : 무조건 현재세기로 반영
+SELECT TO_DATE('021213', 'YYMMDD') FROM DUAL;
+
+SELECT TO_DATE('981213', 'RRMMDD') FROM DUAL;   --  RR : 50미만 일 때는 현재세기, 50이상이면 이전 세기 반영
+SELECT TO_DATE('021213', 'RRMMDD') FROM DUAL;  
+
+---------------------------------------------------------------------------------
+/*
+    *TO_NUMBER : 문자를 숫자타입으로 변환
+    TO_NUMBER(숫자|날짜,[포맷])
+*/
+SELECT TO_NUMBER('012354899323') FROM DUAL; --문자를 숫자로 변환
+SELECT '1000' + '500' FROM DUAL; -- 문자로 입력해도 연산자 입력시 숫자로 인식됨(단 숫자안에 1,000 + 5,000 같이 , 있으면 오류뜸)
+-- SELECT '1,000' + '5,000' FROM DUAL; -- 숫자에 , 컴마가 들어가서 오류
+SELECT TO_NUMBER('1,000,000', '9,999,999')+ TO_NUMBER('50,000','99,999') FROM DUAL; -- 이런식으로 컴마들어간 숫자 문자열을 99,999포멧으로 인식시켜 제대로 숫자로 변환하면 연산할수있다.
+--===========================================================================================================
+--                                            NULL처리 함수
+--===========================================================================================================
+/*
+   * NVL (컬럼, 해당컬럼이 NULL일 경우 반환할 값)
+*/
+SELECT EMP_NAME, NVL(BONUS, 0) -- NVL : BONUS의 컬럼값이 NULL일경우 0으로 반환하시오
+    FROM EMPLOYEE;
+
+-- 전사원의 사원명, 연봉(보너스 포함)
+SELECT EMP_NAME, (SALARY + SALARY*BONUS)*12 --BONUS가 NULL일경우 연산시 NULL값 반환된다
+FROM EMPLOYEE;
+
+SELECT EMP_NAME, (SALARY + SALARY*NVL(BONUS,0))*12 --NVL로 BONUS의 값이 NULL경우 0으로 반환하게 해줘서 NULL값반환을 막을수 있다.
+FROM EMPLOYEE;
+
+SELECT EMP_NAME, (SALARY*(1+NVL(BONUS,0)))*12 -- 이렇게하면 위와 똑같은 값이 나온다.
+FROM EMPLOYEE;
+
+--EMPLOYEE에서 전사원의 사원명, 부서코드(부서가 없으면 '부서없음'출력)
+select EMP_NAME 이름 , NVL(DEPT_CODE, '부서없음') 부서코드 FROM EMPLOYEE;
+
+---------------------------------------------------------------------------------
+/*
+    * NVL2(컬럼, 반환 값1, 반환 값 2)
+    - 반환 값1 : 컬럼에 값이 존재할 때 반환되는 값
+    - 반환 값2 : 컬럼에 값이 NULL일 때 반환되는 값
+*/
+-- EMPLOYEE에서 사원명, 급여, 보너스, 성과급(보너스를 받는사람은 50%, 보너스를 못받는사람 10%를 줄거다)
+SELECT EMP_NAME, SALARY, BONUS, SALARY*NVL2(BONUS,0.5,0.1) 성과급 FROM EMPLOYEE;
+
+
+--EMPLOYEE에서 전사원의 사원명, 부서코드(부서가 있으면 '부서있음' 부서가 없으면 '부서없음'출력)
+select EMP_NAME 이름 , NVL2(DEPT_CODE,'부서있음', '부서없음') 부서코드 FROM EMPLOYEE;
+
+---------------------------------------------------------------------------------
+/*
+    * NULLIF(비교대상1, 비교대상2)
+    - 두 개의 값이 일치하면 NULL반환
+    - 두 개의 값이 일치하지 않으면 비교대상1 값을 반환
+*/
+SELECT NULLIF('1234','1234') FROM DUAL; --NULL
+SELECT NULLIF('1234','5678') FROM DUAL; --1234
+
+--===========================================================================================================
+--                                            선택 함수
+--===========================================================================================================
+/*
+    *DECODE(비교하고자하는 대상(컬럼|산술연산|함수식), 비교값1, 결과값1, 비교값2, 결과값2, ...)
+    
+    SWITCH(비교대상){
+     CASE 비교값1 : 결과값1
+     CASE 비교값2 : 결과값2
+      ...
+     DEFAULT :
+    }
+
+*/
+--EMPLOYEE에서 사번, 사원명, 주민번호, 성별(남,여)조회
+SELECT EMP_ID, EMP_NAME, EMP_NO,DECODE(SUBSTR(EMP_NO,8,1),'1','남','2','여','3','남','4','여') 성별
+    FROM EMPLOYEE;
+    
+-- EMPLOYEE에서 사원명, 급여, 직급코드, 인상된 급여(급여 조회시 각 직급별로 인상하여 조회)
+    --J7인 사원은 급여를 10%인상 (SALARY*1.1)
+    --J6인 사원은 급여를 10%인상 (SALARY*1.15)
+    --J5인 사원은 급여를 10%인상 (SALARY*1.2)
+    --그외의 사원은 급여를 10%인상 (SALARY*1.05)
+
+SELECT EMP_NAME, SALARY, JOB_CODE, 
+                                   TO_CHAR(SALARY*DECODE(JOB_CODE,'J7',1.1,
+                                                                  'J6',1.15,
+                                                                  'J5',1.2,
+                                                                  1.05),
+                                                                  'L999,999,999,999') "인상된 급여"
+                                                                  FROM EMPLOYEE order by JOB_CODE;
+
+---------------------------------------------------------------------------------
+/*
+    * CASE WHEN THEN
+      END
+            조건식 참이면      결과값 실행  나머지는 ELSE실행
+      [표현식]
+      CASE WHER 조건식1 THEN 결과값1
+           WHER 조건식2 THEN 결과값2
+           ...
+           ELSE 결과값N
+      END
+       --END를 꼭 써줘야한다. 
+     
+     ******   
+      (자바의 IF ELSE와 같다)
+      IF(조건식1) 결과값1
+      ELSE IF(조건식2) 결과값2
+      ...
+      ELSE 결과값N
+     ******
+*/
+-- EMPLOYEE에서 사원명, 급여, 급수(급여가 5백만원 이상이면 '고급' 그렇지 않고 3백5십만원 이상이면 '중급' 나머지 '초급')
+SELECT EMP_NAME, SALARY, 
+    CASE WHEN SALARY>= 5000000 THEN '고급'
+         WHEN SALARY>= 3500000 THEN '중급'
+         ELSE '초급'
+    END AS 급수
+FROM EMPLOYEE;
+
+--===========================================================================================================
+--                                            그룹 함수
+--===========================================================================================================
+/*
+    * SUM(컬럼) : 컬럼들의 값의 합계
+
+*/
+--EMPLOYEE에서 전사원의 총급여의 합조회
+SELECT TO_CHAR(SUM(SALARY),'L999,999,999,999') 총급여 FROM EMPLOYEE;
+
+-- 남자 사원의 총 급여의 합
+SELECT SUM(SALARY)
+    FROM EMPLOYEE
+    WHERE SUBSTR(EMP_NO,8,1) IN (1,3);
+
+SELECT SUM(SALARY)
+    FROM EMPLOYEE
+    WHERE DECODE(SUBSTR(EMP_NO,8,1),'1','남','3','남')='남';
+
+-- 부서코드가 D5인 사원의 연봉(보너스)의 합
+SELECT TO_CHAR(SUM(SALARY*(1+NVL(BONUS,'0')))*12,'FML999,999,999,999')
+    FROM EMPLOYEE
+    WHERE DEPT_CODE LIKE 'D5'; -- LIKE 대신 = 써도된다
+
+---------------------------------------------------------------------------------
+/*
+    * AVG(컬럼) : 해당 컬럼들의 평균
+*/
+--전사원의 급여평균
+SELECT AVG(SALARY)
+    FROM EMPLOYEE;
+
+SELECT ROUND(AVG(SALARY)) -- ROUND() : 소숫점 반올림
+    FROM EMPLOYEE;
+
+SELECT ROUND(AVG(SALARY),-1) -- 정수 첫째자리는 반올림
+    FROM EMPLOYEE;
+
+---------------------------------------------------------------------------------
+/*
+    * MIN/MAX:컬럼값중에서 가장 큰값, 가장 작은값
+        MIN(컬럼) 
+*/    
+SELECT MIN(SALARY), MIN(EMP_NAME), MIN(HIRE_DATE)   -- MIN에는 숫자만 올수있는건 아니다 문자가 왔을땐 내림차순 제일 앞부분이 출력
+FROM EMPLOYEE;                                      -- 날짜가 왔을땐 제일 빠른 날짜
+
+SELECT MAX(SALARY), MAX(EMP_NAME), MAX(HIRE_DATE)
+FROM EMPLOYEE;
+
+---------------------------------------------------------------------------------
+/*
+    * COUNT : 행의 갯수
+        COUNT(*|컬럼|DISTINCT컬럼) => 세개중에 하나 적으면 됨
+            -COUNT(*) : 조회된 결과의 모든 행의 갯수
+            -CONUT(컬럼) : 제시한 컬럼에서 NULL값을 제외한 행의 갯수
+            -COUNT(DISTINCT 컬럼): 해당 컬럼값에서 중복값을 제외한 후의 행의 갯수
+*/    
+-- 전체 사원의 수
+SELECT COUNT(*)
+FROM EMPLOYEE;
+
+-- 여자 사원의 수
+SELECT COUNT(*)
+FROM EMPLOYEE
+WHERE SUBSTR(EMP_NO,8,1)IN('2','4');
+
+-- 보너스를 받는 사원의 수
+SELECT COUNT(BONUS)  --NULL값은 자동으로 제외된다
+FROM EMPLOYEE;
+
+--부서배치를 받은 사원의 수
+SELECT COUNT(DEPT_CODE)
+FROM EMPLOYEE;
+
+--현재 사원들이 총 몇개의 부서에 분포되어있는지 조회
+SELECT COUNT(DISTINCT DEPT_CODE)
+FROM EMPLOYEE;
+
+--=============================종 합 문 제=============================== TO_CHAR(SUBSTR(EMP_NO,1,6),'YYMMDD')
+
+-- 1. EMPLOYEE테이블에서 사원 명과 직원의 주민번호를 이용하여 생년, 생월, 생일 조회
+SELECT EMP_NAME,
+            EXTRACT(YEAR FROM TO_DATE(SUBSTR(EMP_NO,1,6))) 생년,
+            EXTRACT(MONTH FROM TO_DATE(SUBSTR(EMP_NO,1,6))) 생월,
+            EXTRACT(DAY FROM TO_DATE(SUBSTR(EMP_NO,1,6))) 생일
+FROM EMPLOYEE;
+--선생님 풀이
+SELECT EMP_NAME,
+--       19|| SUBSTR(EMP_NO,1,2)생년,
+        TO_CHAR(TO_DATE(SUBSTR(EMP_NO,1,2),'RR'),'RRRR')생년,
+        SUBSTR(EMP_NO,3,2)생월,
+        SUBSTR(EMP_NO,5,2)생일
+FROM EMPLOYEE;                
+
+
+-- 2. EMPLOYEE테이블에서 사원명, 주민번호 조회 (단, 주민번호는 생년월일만 보이게 하고, '-'다음 값은 '*'로 바꾸기)
+SELECT EMP_NAME, SUBSTR(EMP_NO,1,7)||'*******'
+FROM EMPLOYEE;
+
+--교수님 풀이
+SELECT EMP_ID,EMP_NAME, RPAD(SUBSTR(EMP_NO,1,7),14,'*') 주민번호
+FROM EMPLOYEE;
+
+
+-- 3. EMPLOYEE테이블에서 사원명, 입사일-오늘, 오늘-입사일 조회
+--   (단, 각 별칭은 근무일수1, 근무일수2가 되도록 하고 모두 정수(내림), 양수가 되도록 처리)
+SELECT EMP_NAME, ABS(FLOOR(HIRE_DATE - SYSDATE)) 근무일수1, FLOOR(SYSDATE-HIRE_DATE) 근무일수2
+FROM EMPLOYEE;
+
+--교수님 풀이
+SELECT EMP_NAME, FLOOR(ABS(HIRE_DATE-SYSDATE)) 근무일수1, FLOOR(SYSDATE-HIRE_DATE) 근무일수2
+FROM EMPLOYEE; // ABS와 FLOOR위치에따라서 음수 내림값때문에 값이 1씩 바뀔수 있다
+
+-- 4. EMPLOYEE테이블에서 사번이 홀수인 직원들의 정보 모두 조회
+SELECT *
+FROM EMPLOYEE
+WHERE MOD(EMP_ID,'2') != '0';
+
+
+-- 5. EMPLOYEE테이블에서 근무 년수가 20년 이상인 직원 정보 조회
+SELECT *
+FROM EMPLOYEE
+WHERE FLOOR(MONTHS_BETWEEN(SYSDATE,HIRE_DATE)/12)>= 20;
+--교수님 풀이
+SELECT *
+ FROM EMPLOYEE
+ WHERE MONTHS_BETWEEN(SYSDATE, HIRE_DATE)>240;
 
 
 
+-- 6. EMPLOYEE 테이블에서 사원명, 급여 조회 (단, 급여는 '\9,000,000' 형식으로 표시)
+SELECT EMP_NAME, TO_CHAR(SALARY,'FML999,999,999,999')
+FROM EMPLOYEE;
 
+-- 7. EMPLOYEE테이블에서 직원 명, 부서코드, 생년월일, 나이 조회
+--   (단, 생년월일은 주민번호에서 추출해서 00년 00월 00일로 출력되게 하며 
+--   나이는 주민번호에서 출력해서 날짜데이터로 변환한 다음 계산)
+SELECT EMP_NAME, DEPT_CODE, 
+        TO_CHAR(TO_DATE(SUBSTR(EMP_NO,1,6)),'YY"년" MM"월" DD"일"') 생년월일, 
+        FLOOR(MONTHS_BETWEEN(SYSDATE, TO_DATE(SUBSTR(EMP_NO,1,6)))/12) 나이
+FROM EMPLOYEE;
+
+--교수님 풀이
+SELECT EMP_NAME, DEPT_CODE, 
+        SUBSTR(EMP_NO,1,6)||'년'||SUBSTR(EMP_NO,3,2)||'월'||SUBSTR(EMP_NO,5,2)||'일' "생년월일", 
+        EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE(SUBSTR(EMP_NO,1,2),'RRRR')) 나이
+FROM EMPLOYEE;
+
+
+-- 8. EMPLOYEE테이블에서 부서코드가 D5, D6, D9인 사원만 조회하되 D5면 총무부
+--   , D6면 기획부, D9면 영업부로 처리(EMP_ID, EMP_NAME, DEPT_CODE, 총무부)
+--    (단, 부서코드 오름차순으로 정렬)
+--풀이 1
+SELECT EMP_ID, EMP_NAME, DEPT_CODE, 
+        CASE WHEN DEPT_CODE = 'D5' THEN '총무부'
+             WHEN DEPT_CODE = 'D6' THEN '기획부'
+             WHEN DEPT_CODE = 'D9' THEN '영업부'
+        END 부서명
+FROM EMPLOYEE 
+WHERE DEPT_CODE IN('D5','D6','D9') ORDER BY DEPT_CODE;
+
+--풀이2
+SELECT EMP_ID, EMP_NAME, DEPT_CODE,
+        DECODE(DEPT_CODE,'D5','총무부','D6','기획부','D9','영업부') 부서명
+FROM EMPLOYEE 
+WHERE DEPT_CODE IN('D5','D6','D9') ORDER BY 3; -- 위에 입력한 컬럼중 3번째 컬럼 오름차순 정렬
+
+
+-- 9. EMPLOYEE테이블에서 사번이 201번인 사원명, 주민번호 앞자리, 주민번호 뒷자리, 
+--    주민번호 앞자리와 뒷자리의 합 조회
+SELECT EMP_NAME, SUBSTR(emp_NO,1,6),SUBSTR(EMP_NO,8), SUBSTR(emp_NO,1,6) + SUBSTR(EMP_NO,8) "주민번호 앞, 뒷자리합"
+FROM EMPLOYEE 
+WHERE EMP_ID LIKE 201;
+
+--교수님 풀이
+SELECT EMP_NAME, 
+        SUBSTR(EMP_NO,1,6) 생년월일, 
+        SUBSTR(EMP_NO,8) "주민등록번호 뒷자리",
+        SUBSTR(emp_NO,1,6) + SUBSTR(EMP_NO,8) "주민번호 앞, 뒷자리합"
+ FROM EMPLOYEE
+ WHERE EMP_ID = '201';
+
+
+-- 10. EMPLOYEE테이블에서 부서코드가 D5인 직원의 보너스 포함 연봉 합 조회
+SELECT SUM(SALARY + SALARY*NVL(BONUS,0))*12
+FROM EMPLOYEE 
+WHERE DEPT_CODE LIKE 'D5';
+
+--교수님 풀이
+SELECT SUM(SALARY*NVL(1+BONUS,1)*12)
+ FROM EMPLOYEE
+ WHERE DEPT_CODE = 'D5';
+
+
+
+-- 11. EMPLOYEE테이블에서 직원들의 입사일로부터 년도만 가지고 각 년도별 입사 인원수 조회
+--      전체 직원 수, 2001년, 2002년, 2003년, 2004
+
+
+
+--    EXTRACT(YEAR FROM HIRE_DATE)
+
+SELECT COUNT(*) AS "전체 직원수",
+    SUM(CASE WHEN EXTRACT(YEAR FROM HIRE_DATE) = 2001 THEN 1 ELSE 0 END) "2001",
+    SUM(CASE WHEN EXTRACT(YEAR FROM HIRE_DATE) = 2002 THEN 1 ELSE 0 END) "2002",
+    SUM(CASE WHEN EXTRACT(YEAR FROM HIRE_DATE) = 2003 THEN 1 ELSE 0 END) "2003",
+    SUM(CASE WHEN EXTRACT(YEAR FROM HIRE_DATE) = 2004 THEN 1 ELSE 0 END) "2004"
+FROM EMPLOYEE;
+
+-- 전체 입사년도
+SELECT EXTRACT(YEAR FROM HIRE_DATE)
+FROM EMPLOYEE;
+
+ -- 2001년, 2002년, 2003년, 2004년 개수
+SELECT COUNT(*) 전체직원수,
+        COUNT(DECODE(EXTRACT(YEAR FROM HIRE_DATE), '2001',1)) "2001년",
+        COUNT(DECODE(EXTRACT(YEAR FROM HIRE_DATE), '2002',1)) "2002년",
+        COUNT(DECODE(EXTRACT(YEAR FROM HIRE_DATE), '2003',1)) "2003년",
+        COUNT(DECODE(EXTRACT(YEAR FROM HIRE_DATE), '2004',1)) "2004년"
+ FROM EMPLOYEE;
+ 
+SELECT COUNT(*) 전체직원수,
+         COUNT(CASE WHEN EXTRACT(YEAR FROM HIRE_DATE) = 2001 THEN 1 END) "2001",
+         COUNT(CASE WHEN TO_CHAR(HIRE_DATE, 'RRRR') = '2013' THEN 1 END) "2013",
+         COUNT(DECODE(TO_CHAR(HIRE_DATE, 'RRRR'), '2004',1)) "2004"
+ FROM EMPLOYEE;         
+        
