@@ -859,4 +859,11 @@ SELECT COUNT(*) 전체직원수,
          COUNT(CASE WHEN TO_CHAR(HIRE_DATE, 'RRRR') = '2013' THEN 1 END) "2013",
          COUNT(DECODE(TO_CHAR(HIRE_DATE, 'RRRR'), '2004',1)) "2004"
  FROM EMPLOYEE;         
+ 
+ 
+ 
+ 
+ 
+ 
+ 
         
