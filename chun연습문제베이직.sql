@@ -37,10 +37,16 @@ WHERE LENGTH(PROFESSOR_NAME) != 3;
 -- (단, 교수 중 2000년 이후 출생자는 없으며 출력헤더는 "교수이름", "나이"로 한다
 -- 나이는 '만'으로 계산한다.)
 SELECT PROFESSOR_NAME 교수이름,PROFESSOR_SSN, FLOOR(MONTHS_BETWEEN(TO_DATE(SUBSTR(PROFESSOR_SSN,1,6),'YYMMDD'),SYSDATE)/12) 나이,
-    TO_CHAR(TO_DATE(SUBSTR(PROFESSOR_SSN,1,6),'YYMMDD'),'YYYYMMDD') - TO_CHAR(TO_DATE('01000000','YYYYMMDD'),'YYYYMMDD')
+    TO_CHAR(TO_DATE(SUBSTR(PROFESSOR_SSN,1,6),'YYMMDD'),'YYYYMMDD') - TO_CHAR(TO_DATE('01000101','YYYYMMDD'),'YYYYMMDD')
 FROM TB_PROFESSOR
 WHERE SUBSTR(PROFESSOR_SSN, 8, 1) IN ('1', '3')
 ORDER BY 나이 ASC;
+
+--교수님 풀이
+select professor_name 교수이름, extract(year from sysdate) - (19 ||substr(professor_ssn,1,2)) 나이
+from tb_professor
+where substr(professor_ssn,8,1) = 1
+order by 나이;
 
 --4 교수들의 이름 중 성을 제외한 이름만 출력하는 SQL 문장을 작성하시오.
 --출력 헤더는 " 이름 " 이 찍히도록 한다. (성이 2자인 경우는 없다고 가정)
@@ -98,6 +104,14 @@ SELECT TERM_NO, ROUND(AVG(POINT),1)
     HAVING TERM_NO > 200201;
     -- GROUB BY있는 쿼리문에 WHERE이 무조건 못들어오는게 아니다
 --        GROUB BY가 묶은 컬럼의 조건식만 HAVING에 적어주고 그 외에 조건은 WHERE로 묶을수 있다
+
+-- 교수님 풀이
+select substr(term_no,1,4)년도, round(avg(point),1) "년도 별 평점"
+from tb_grade
+where student_no = 'A112113'
+group by substr(term_no,1,4);
+
+
 
 --13. 학과 별 휴학생 수를 파악하고자 한다. 학과 번호와 휴학생 수를 표시하는 SQL 문장을 작성하시오
 SELECT DEPARTMENT_NO, COUNT(DECODE(absence_yn, 'Y', 1))
