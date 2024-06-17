@@ -83,3 +83,15 @@ alter session set "_oracle_script" = true;
 create user chun identified by 1234;
 grant resource, connect to chun;
 alter user chun default tablespace users quota unlimited on users;
+
+
+--DDL 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user DDL identified by 1234;
+grant resource, connect to DDL;
+alter user DDL default tablespace users quota unlimited on users;
+
+
+
+
+
