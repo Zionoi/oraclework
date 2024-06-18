@@ -144,3 +144,38 @@ GROUP BY CUBE(DEPT_CODE, JOB_CODE)
 
 
 
+--=================================================================================================================
+-- 춘대학교 option 문제
+--=================================================================================================================
+--1. 학생이름과 주소지를 표시하시도. 단, 출력 헤더는 "학생 이름", "주소지"로 하고, 정렬은 이름으로 오름차순 표시하도록 한다.
+select STUDENT_NAME 학생이름, STUDENT_ADDRESS 주소지
+from TB_STUDENT
+order by STUDENT_NAME;
+
+--2 휴학중인 학생들의 이름과 주민번호를 나이가 적은 순서로 화면에 출력하시오
+select STUDENT_NAME 학생이름, STUDENT_ADDRESS 주소지
+from TB_STUDENT
+where ABSENCE_YN = 'Y';
+
+--3. 주소지가 강원도나 경기도인 학생들 중 1900년대 학번을 가진 학생들의 이름과 학번, 주소를 이름의 오름차순으로 화면에 출력하시도.
+--단, 출력헤더에는 "학생이름", "학번", "거주지 주소"가 출력되도록 한다
+select STUDENT_NAME 학생이름,STUDENT_NO 학번, STUDENT_ADDRESS "거주지 주소"
+from TB_STUDENT
+where substr(STUDENT_NO,1,1) <= '9'
+order by STUDENT_NAME;
+
+--4. 현재 법학과 교수 중 가장 나이가 많은 사람부터 이름을 확인할 수 있는 sql 문장을 작성하시오.
+-- (법학과의 '학과코드'는 학과 테이블(TB_DEPARTMENT)을 조회해서 찾아내도록 하자)
+SELECT PROFESSOR_NAME, EXTRACT(YEAR FROM SYSDATE) - (19||SUBSTR(PROFESSOR_SSN,1,2)) 나이
+FROM TB_PROFESSOR
+JOIN TB_DEPARTMENT USING(DEPARTMENT_NO)
+ORDER BY EXTRACT(YEAR FROM SYSDATE) - (19||SUBSTR(PROFESSOR_SSN,1,2));
+
+--5. 2004년 2학기에 'C3118100' 과목을 수강한 학생들의 학점을 조회하려고 한다. 학점이 높은 학생부터
+--표시하고, 학점이 같으면 학번이 낮은 학생부터 표시하는 구문을 작성해보시오
+SELECT POINT
+FROM TB_GRADE
+WHERE CLASS_NO = 'C3118100'
+ORDER BY POINT, STUDENT_NO;
+
+--6. 
