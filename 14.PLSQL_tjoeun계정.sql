@@ -591,9 +591,9 @@ END;
 
 BEGIN
     FOR X IN 2..8
+             LOOP
       IF X IN (2,4,6,8)
         THEN
-         LOOP
             FOR Y IN 1..9
             LOOP
                 DBMS_OUTPUT.PUT_LINE(X || ' * ' ||Y|| ' = ' || X*Y);
