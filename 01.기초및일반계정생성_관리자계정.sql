@@ -92,6 +92,10 @@ grant resource, connect to DDL;
 alter user DDL default tablespace users quota unlimited on users;
 
 
-
+--마트 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user mart identified by 1234;
+grant resource, connect to mart;
+alter user mart default tablespace users quota unlimited on users;
 
 
