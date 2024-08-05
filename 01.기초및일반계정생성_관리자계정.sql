@@ -98,4 +98,27 @@ create user mart identified by 1234;
 grant resource, connect to mart;
 alter user mart default tablespace users quota unlimited on users;
 
+--JSP 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user JSP identified by 1234;
+grant resource, connect to JSP;
+alter user JSP default tablespace users quota unlimited on users;
+
+--vote 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user vote identified by 1234;
+grant resource, connect to vote;
+alter user vote default tablespace users quota unlimited on users;
+
+--board 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user board identified by 1234;
+grant resource, connect to board;
+alter user board default tablespace users quota unlimited on users;
+
+--mybatis 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user mybatis identified by 1234;
+grant resource, connect to mybatis;
+alter user mybatis default tablespace users quota unlimited on users;
 
