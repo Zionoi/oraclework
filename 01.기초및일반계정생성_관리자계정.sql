@@ -122,3 +122,9 @@ create user mybatis identified by 1234;
 grant resource, connect to mybatis;
 alter user mybatis default tablespace users quota unlimited on users;
 
+--SPRINGBOOT 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user SPRINGBOOT identified by 1234;
+grant resource, connect to SPRINGBOOT;
+alter user SPRINGBOOT default tablespace users quota unlimited on users;
+
