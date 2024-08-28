@@ -128,3 +128,10 @@ create user SPRINGBOOT identified by 1234;
 grant resource, connect to SPRINGBOOT;
 alter user SPRINGBOOT default tablespace users quota unlimited on users;
 
+
+--HOMEPAGE 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user HOMEPAGE identified by 1234;
+grant resource, connect to HOMEPAGE;
+alter user HOMEPAGE default tablespace users quota unlimited on users;
+
