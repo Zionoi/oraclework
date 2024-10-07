@@ -141,3 +141,8 @@ create user project5 identified by 1234;
 grant resource, connect to project5;
 alter user project5 default tablespace users quota unlimited on users;
 
+--project5 사용자 만들기
+alter session set "_oracle_script" = true; 
+create user dicom identified by 1234;
+grant resource, connect to dicom;
+alter user dicom default tablespace users quota unlimited on users;
